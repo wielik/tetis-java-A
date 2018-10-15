@@ -1,0 +1,1 @@
+W Blocks trzeba okreœliæ dla ka¿dego bloku metode getBoundaries do ogarniêcia kolizji z levelem.
