@@ -1,1 +1,10 @@
-W Blocks trzeba okreœliæ dla ka¿dego bloku metode getBoundaries do ogarniêcia kolizji z levelem.
+Kolizja boczna przy "wpychaniu" klocka
+Nie sprawdzaj w ogóle kolizji dolnej jezeli klocek jest wysoko (wydajnosc - omijanie pêtli)
+ghostPiece - szarawy klocek pokazujacy gdzie wyladuje klocek w obecnej sytuacji
+SPACJA - natychmiastowe przemieszczenie curretnPiece do ghostPiece
+
+
+UI Canvas - Level + Score
+Next Piece Canvas - pokazywanie nastepnego klocka
+Napis game over + restart
+

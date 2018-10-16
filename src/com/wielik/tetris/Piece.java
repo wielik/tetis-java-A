@@ -10,6 +10,8 @@ public class Piece {
 	private int tileWidth;
 	private int tileHeight;
 	
+	private boolean justSpawned = true;
+	
 	private boolean[][] blocks;
 	private boolean[][] voidBlock = new boolean[][] {{false, false, false, false}, {false, false, false, false}, {false, false, false, false}, {false, false, false, false}};
 	private boolean[][] IBlock = new boolean[][] {{false, true, false, false}, {false, true, false, false}, {false, true, false, false}, {false, true, false, false}};
@@ -151,9 +153,15 @@ public class Piece {
 		return color;
 	}
 	
+	public boolean isJustSpawned() {
+		return justSpawned;
+	}
+	
 	public void update() {
 		y += tileSize;
+		if(justSpawned) justSpawned = false;
 	}
+	
 
 	public void render(Renderer r) {
 		for(int i = 0; i < blocks.length; i++) {

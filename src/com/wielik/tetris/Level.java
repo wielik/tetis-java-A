@@ -29,6 +29,8 @@ public class Level {
 	private int clock = 0;
 	private int difficulty_level = 1;
 	
+	private int score = 0;
+	private boolean game_over;
 
 	public Level(Tetris game) {
 		super();
@@ -39,6 +41,7 @@ public class Level {
 		tiles = new boolean[tileWidth][tileHeight];
 		colors = new Color[tileWidth][tileHeight];
 		
+		game_over = false;
 	}
 	
 	private void removeRow(int row) {
@@ -75,6 +78,7 @@ public class Level {
 		for(int i = 0; i < tileWidth; i++) {
 			for(int j = startingRow; j > 0; j--) {
 				tiles[i][j] = tiles[i][j-1];
+				colors[i][j] = colors[i][j-1];
 			}
 			resetTile(i, 0);
 		}
@@ -104,29 +108,65 @@ public class Level {
 		}
 		if(input.isKeyPressed(68) || input.isKeyPressed(39)) {
 			//Pressed D or ->
-			if(currentPiece.getX() + currentPiece.getXboundary() < width ) {
+			if(!isCollisionRight(currentPiece)) {
 				currentPiece.move(1, 0);  
 			}
 		}
 		if(input.isKeyPressed(65) || input.isKeyPressed(37)) {
 			//Pressed A or <-
-			if(currentPiece.getX() > 0) currentPiece.move(-1, 0); 
+			if(!isCollisionLeft(currentPiece)) {
+				currentPiece.move(-1, 0); 
+			}	
 		}
 		if(input.isKeyPressed(40) || input.isKeyPressed(32) || input.isKeyPressed(83)) {
 			//Pressed S or down arrow or space
-			currentPiece.move(0, 1); 
+			if(!isCollision(currentPiece)) {
+				currentPiece.update();
+			}
 		}
 		if(input.isKeyDown(81)) {
 			//Pressed Q
-			if(currentPiece.getX() > 0) currentPiece.rotateLeft();
+			if(canRotate(currentPiece)) {
+				currentPiece.rotateLeft();
+			}
 		}
 		if(input.isKeyDown(69)) {
 			//Pressed E
-			if(currentPiece.getX() + currentPiece.getXboundary() < width ) currentPiece.rotateRight();
+			if(canRotate(currentPiece)) {
+				currentPiece.rotateRight();
+			}
 		}	
 		input.update();
 	}
 	
+
+	public boolean isCollisionRight(Piece piece) {
+		int pieceWidth = piece.getBlocks().length; 
+		int pieceHeight = piece.getBlocks()[0].length;
+		
+		for(int i = pieceWidth - 1; i >= 0; i--) {
+			for(int j = 0; j < pieceHeight; j++) {
+				if((piece.getBlocks()[i][j]) && (piece.getX() + ((i + 2) * piece.getTileSize()) > width)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isCollisionLeft(Piece piece) {
+		int pieceWidth = piece.getBlocks().length; 
+		int pieceHeight = piece.getBlocks()[0].length;
+		
+		for(int i = 0; i < pieceWidth; i++) {
+			for(int j = 0; j < pieceHeight; j++) {
+				if((piece.getBlocks()[i][j]) && (piece.getX() + ((i - 1) * piece.getTileSize()) < 0)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	
 	public boolean isCollision(Piece piece) {
 		int pieceWidth = piece.getBlocks().length;  //szerokosc klocka w kratkach
@@ -137,7 +177,7 @@ public class Level {
 		for(int i = pieceWidth - 1; i >= 0; i--) {
 			for(int j = pieceHeight - 1; j >= 0 ; j--) {
 				//Sprawdzenie kolizji z podloga
-				if(piece.getBlocks()[i][j] && ((piece.getY() + ((j + 1) * 25)) >= height)) return true;
+				if(piece.getBlocks()[i][j] && ((piece.getY() + ((j + 1) * piece.getTileSize())) >= height)) return true;
 				//Sprawdzenie kolizji z polozonymi klockami
 				if(piece.getBlocks()[i][j]) {
 					if(tiles[piecePosX + i][piecePosY + j]) return true;
@@ -145,6 +185,14 @@ public class Level {
 			}
 		}
 		return false;
+	}
+	
+	private boolean canRotate(Piece piece) {
+		int pieceWidth = piece.getBlocks().length;
+		
+		if(piece.getX() < 0) return false;
+		if(piece.getX() + (pieceWidth * piece.getTileSize()) > width) return false;
+		return true;
 	}
 	
 	public void transform(Piece piece) {
@@ -165,27 +213,36 @@ public class Level {
 	}
 	
 	public void update(Input input) {
-		if(currentPiece == null) currentPiece = RandomizePiece();
-		
-		clock++;
-		
-		if(isCollision(currentPiece)) {
-			transform(currentPiece);
-			System.out.print("KOLIZJA");
-		}
-		else {
-			if(clock >= (60 / difficulty_level)) {
-				currentPiece.update();
-				clock = 0;
+		if(!game_over) {
+			if(currentPiece == null) currentPiece = RandomizePiece();
+			
+			clock++;
+			
+			if(isCollision(currentPiece)) {
+				if(currentPiece.isJustSpawned()) {
+					game_over = true;
+					System.out.println("GAME OVER");
+				}
+				transform(currentPiece);
 			}
-			readInput(input);
-		}
-		
-		
-		for(int i = 0; i < tileHeight; i++) {
-			if(isRowComplete(i)) {
-				removeRow(i);
-				moveLevelDown(i);
+			else {
+				if(clock >= (60 / difficulty_level)) {
+					currentPiece.update();
+					clock = 0;
+				}
+				if(clock % 3 == 0) {
+					readInput(input);
+				}
+			}
+			
+			for(int i = 0; i < tileHeight; i++) {
+				if(isRowComplete(i)) {
+					removeRow(i);
+					moveLevelDown(i);
+					score += 50 * difficulty_level;
+					if(score > (difficulty_level * 250)) difficulty_level++;
+					System.out.println("SCORE: " + score + "  LEVEL: " + difficulty_level);
+				}		
 			}
 		}
 	}
