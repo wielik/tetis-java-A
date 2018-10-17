@@ -1,12 +1,12 @@
 package com.wielik.tetris;
 
+import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.util.Random;
 
-import javafx.scene.input.KeyCode;
-
 @SuppressWarnings("serial")
-public class Level {
+public class Level extends Canvas {
 	
 	Random random;
 	
@@ -29,6 +29,9 @@ public class Level {
 	private int clock = 0;
 	private int difficulty_level = 1;
 	
+	private int anim_counter = 0;
+	private int anim_length = 10;
+	
 	private int score = 0;
 	private boolean game_over;
 
@@ -42,6 +45,14 @@ public class Level {
 		colors = new Color[tileWidth][tileHeight];
 		
 		game_over = false;
+		
+		setSize(width, height);
+	}
+	
+	@Override
+	public Dimension getPreferredSize() {
+		Dimension prefSize = new Dimension(width, height);
+		return prefSize;
 	}
 	
 	private void removeRow(int row) {
@@ -65,6 +76,12 @@ public class Level {
 	public int getTileCoordinateFromPixel(int pixelValue) {
 		int tile = (int) Math.floor((pixelValue / tileSize));
 		return tile;
+	}
+	
+	private void setColorToLine(int row, Color color) {
+		for(int i = 0; i < tileWidth; i++) {
+			colors[i][row] = color;
+		}
 	}
 	
 	private boolean isRowComplete(int row) {
@@ -214,7 +231,10 @@ public class Level {
 	
 	public void update(Input input) {
 		if(!game_over) {
-			if(currentPiece == null) currentPiece = RandomizePiece();
+			if(currentPiece == null) {
+				currentPiece = RandomizePiece();
+				nextPiece = RandomizePiece();
+			}
 			
 			clock++;
 			
@@ -224,6 +244,9 @@ public class Level {
 					System.out.println("GAME OVER");
 				}
 				transform(currentPiece);
+				currentPiece = nextPiece;
+				nextPiece = RandomizePiece();
+				System.out.println(nextPiece.getType());
 			}
 			else {
 				if(clock >= (60 / difficulty_level)) {
@@ -237,16 +260,22 @@ public class Level {
 			
 			for(int i = 0; i < tileHeight; i++) {
 				if(isRowComplete(i)) {
-					removeRow(i);
-					moveLevelDown(i);
-					score += 50 * difficulty_level;
-					if(score > (difficulty_level * 250)) difficulty_level++;
-					System.out.println("SCORE: " + score + "  LEVEL: " + difficulty_level);
+					if(anim_counter == 0) setColorToLine(i, Color.WHITE);
+					anim_counter++;
+					if(anim_counter >= anim_length) {
+						removeRow(i);
+						moveLevelDown(i);
+						anim_counter = 0;
+						score += 50 * difficulty_level;
+						if(score > (difficulty_level * 250)) difficulty_level++;
+						System.out.println("SCORE: " + score + "  LEVEL: " + difficulty_level);
+					}
 				}		
 			}
 		}
 	}
 	
+
 	public void render(Renderer r) {
 		for(int i = 0; i < tileWidth; i++) {
 			for(int j = 0; j < tileHeight; j++)

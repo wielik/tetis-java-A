@@ -1,16 +1,21 @@
 package com.wielik.tetris;
 
+import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
-public class Tetris extends Canvas implements Runnable {
+public class Tetris implements Runnable {
 
-	private final int WIDTH = 350;
-	private final int HEIGHT = 725;
+	private final int WIDTH = 250;
+	private final int HEIGHT = 625;
 	private final String NAME = "TETRIS v0.1";
 	private final double UPDATE_CAP = 1.0/60.0;
 	
@@ -19,30 +24,55 @@ public class Tetris extends Canvas implements Runnable {
 	private boolean unlimitedFPS = false;
 	
 	private Thread gameThread;
-	private JFrame frame;
+	
+	
+	private Window window;
 	
 	private Level level;
+	private NextPieceContainer nextPieceCanvas;
+	private Canvas scoreCanvas;
+	private JPanel leftPanel;
+	private JPanel rightPanel;
+	
+	
 	private Renderer renderer;
 	private Input input;
 	
 	public Tetris() {
-		super();
-		frame = new JFrame(NAME);
-		Dimension size = new Dimension(WIDTH, HEIGHT);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setPreferredSize(size);
-		frame.setMaximumSize(size);
-		frame.setMinimumSize(size);
-		frame.setLocationRelativeTo(null);
-		frame.setResizable(false);
-		frame.setVisible(true);
-		frame.add(this);
-		frame.pack();
+	
+		leftPanel = new JPanel();
+		rightPanel = new JPanel();
 		
 		level = new Level(this);
-		renderer = new Renderer(this);
+		nextPieceCanvas = new NextPieceContainer();
+		scoreCanvas = new Canvas();
+		
+		nextPieceCanvas.setSize(100, HEIGHT/2);
+		nextPieceCanvas.setPreferredSize(new Dimension(100, HEIGHT/2));
+		nextPieceCanvas.setBackground(Color.BLUE);
+		
+		scoreCanvas.setSize(200, HEIGHT/2);
+		scoreCanvas.setBackground(Color.WHITE);
+		
+		leftPanel.setSize(level.getPreferredSize());
+		leftPanel.setLayout(new BorderLayout());
+		rightPanel.setSize(200, HEIGHT);
+		rightPanel.setLayout(new BoxLayout(rightPanel, 1));
+		rightPanel.setLocation(leftPanel.getWidth(), leftPanel.getHeight());
+
+		
+
+		leftPanel.add(level);
+		rightPanel.add(nextPieceCanvas);
+		rightPanel.add(scoreCanvas);
+		
+		window = new Window(NAME, leftPanel.getWidth() + rightPanel.getWidth(), HEIGHT + 30, leftPanel, rightPanel);
+
+		renderer = new Renderer(level);
 		input = new Input();
-		input.init(this);
+		input.init(level);
+		
+		level.requestFocus();
 	}
 	
 	public static void main(String[] args) {
@@ -106,7 +136,7 @@ public class Tetris extends Canvas implements Runnable {
 			}
 			
 			if (counterTime > 1) {
-				frame.setTitle(NAME + "  ||  " + "FPS: " + renderCount + " UPS: " + updateCount);
+				window.setTitle(NAME + "  ||  " + "FPS: " + renderCount + " UPS: " + updateCount);
 				System.out.println("FPS: " + renderCount + " UPS: " + updateCount);
 				counterTime = 0;
 				updateCount = 0;
@@ -122,6 +152,7 @@ public class Tetris extends Canvas implements Runnable {
 	public void render() {
 		renderer.clear();
 		level.render(renderer);
+		nextPieceCanvas.render(renderer);
 		renderer.drawScreen();
 	}
 	

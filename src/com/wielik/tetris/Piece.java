@@ -22,12 +22,14 @@ public class Piece {
 	private boolean[][] JBlock = new boolean[][] {{true, false, false}, {true, true, true}, {false, false, false}};
 	private boolean[][] LBlock = new boolean[][] {{false, false, true}, {true, true, true}, {false, false, false}};
 	
+	private TYPE type;
 	public enum TYPE {VOID, I, O, T, S, Z, J, L};
 	
 	public Piece(int x, int y, int tileSize, TYPE type) {
 		this.x = x;
 		this.y = y;
 		this.tileSize = tileSize;
+		this.type = type;
 		
 		if(type == TYPE.VOID) {
 			blocks = voidBlock;
@@ -55,7 +57,7 @@ public class Piece {
 		}
 		if(type == TYPE.J) {
 			blocks = JBlock;
-			this.color = Color.YELLOW;
+			this.color = Color.PINK;
 		}
 		if(type == TYPE.L) {
 			blocks = LBlock;
@@ -157,6 +159,9 @@ public class Piece {
 		return justSpawned;
 	}
 	
+	public TYPE getType() {
+		return type;
+	}
 	public void update() {
 		y += tileSize;
 		if(justSpawned) justSpawned = false;

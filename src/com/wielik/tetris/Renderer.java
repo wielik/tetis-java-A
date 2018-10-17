@@ -11,11 +11,11 @@ public class Renderer {
 	BufferStrategy bs;
 	BufferedImage image;
 	
-	Tetris game;
+	Level level;
 	
-	public Renderer(Tetris game) {
-		this.game = game;
-		image = new BufferedImage(game.getWidth(), game.getHeight(), BufferedImage.TYPE_INT_RGB);
+	public Renderer(Level level) {
+		this.level = level;
+		image = new BufferedImage(level.getWidth(), level.getHeight(), BufferedImage.TYPE_INT_RGB);
 		g = image.getGraphics();
 
 	}
@@ -25,6 +25,7 @@ public class Renderer {
 		g.fillRect(xPos, yPos, tileSize, tileSize);
 		g.setColor(Color.BLACK);
 		g.drawRect(xPos, yPos, tileSize - 1, tileSize - 1);
+		g.drawRect(xPos + 1, yPos + 1, tileSize - 2, tileSize - 2);
 	}
 	
 	public void renderBorderTile(int xPos, int yPos, int tileSize, Color color) {
@@ -33,7 +34,7 @@ public class Renderer {
 	}
 		
 	public void drawScreen() {
-		Graphics gameG = game.getGraphics();
+		Graphics gameG = level.getGraphics();
 		gameG.drawImage(image, 0, 0, null);
 		gameG.dispose();
 	}
